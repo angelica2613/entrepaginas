@@ -241,6 +241,14 @@
         >
           <i class="fab fa-whatsapp"></i> Contactar por WhatsApp
         </a>
+
+        <p class="text-center text-sm text-gray-600 mt-4">
+          ¿No tienes cuenta? 
+          <a href="javascript:void(0)" onclick="abrirRegistro()"
+            class="font-semibold text-blue-700 hover:text-blue-900 underline cursor-pointer">
+            Crear cuenta
+          </a>
+        </p>
       </div>
     </main>
 
@@ -289,6 +297,84 @@
           });
         }
       });
+    </script>
+    <script>
+      function abrirRegistro() {
+  Swal.fire({
+    title: '<i class="fas fa-book-open"></i> Crear cuenta',
+    html: `
+      <input id="reg-nombre"    class="swal2-input" placeholder="Nombre completo" />
+      <input id="reg-correo"    class="swal2-input" type="email" placeholder="Correo electrónico" />
+      <input id="reg-password"  class="swal2-input" type="password" placeholder="Contraseña" />
+      <input id="reg-dni"       class="swal2-input" placeholder="DNI (8 dígitos)" maxlength="8" />
+      <input id="reg-telefono"  class="swal2-input" placeholder="Teléfono" />
+      <input id="reg-direccion" class="swal2-input" placeholder="Dirección" />
+    `,
+    confirmButtonText: 'Registrarme',
+    confirmButtonColor: '#1e40af',
+    showCancelButton: true,
+    cancelButtonText: 'Cancelar',
+    background: '#fffef0',
+    preConfirm: () => {
+      const nombre    = document.getElementById('reg-nombre').value.trim();
+      const correo    = document.getElementById('reg-correo').value.trim();
+      const password  = document.getElementById('reg-password').value.trim();
+      const dni       = document.getElementById('reg-dni').value.trim();
+      const telefono  = document.getElementById('reg-telefono').value.trim();
+      const direccion = document.getElementById('reg-direccion').value.trim();
+
+      if (!nombre || !correo || !password) {
+        Swal.showValidationMessage('Nombre, correo y contraseña son obligatorios');
+        return false;
+      }
+      if (dni && !/^\d{8}$/.test(dni)) {
+        Swal.showValidationMessage('El DNI debe tener exactamente 8 dígitos');
+        return false;
+      }
+      return { nombre, correo, password, dni, telefono, direccion };
+    }
+  }).then(result => {
+    if (!result.isConfirmed) return;
+    fetch('/entrepaginas/registro', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        correo:    result.value.correo,
+        contrasena: result.value.password,
+        rol:       'CLIENTE',
+        cliente: {
+          nombre:    result.value.nombre,
+          dni:       result.value.dni,
+          telefono:  result.value.telefono,
+          direccion: result.value.direccion,
+          correo:    result.value.correo
+        }
+      })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: '¡Cuenta creada!',
+          text: 'Ya puedes iniciar sesión con tus credenciales.',
+          confirmButtonColor: '#1e40af',
+          background: '#fffef0'
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: data.message || 'No se pudo crear la cuenta.',
+          confirmButtonColor: '#1e40af',
+          background: '#fffef0'
+        });
+      }
+    })
+    .catch(() => Swal.fire({ icon: 'error', title: 'Error de conexión' }));
+  });
+}
+      
     </script>
   </body>
 </html>

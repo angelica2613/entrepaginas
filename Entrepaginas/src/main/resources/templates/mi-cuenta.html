@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi Cuenta - Entre Páginas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,600;1,400&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    :root {
+      --crema: #fffef0;
+      --crema-oscuro: #f5f0e0;
+      --dorado: #c9a84c;
+      --dorado-oscuro: #a07830;
+      --cafe: #5c3d1e;
+      --cafe-claro: #8b5e3c;
+      --azul-noche: #1a2744;
+      --texto: #2c1a0e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background-color: var(--crema);
+      color: var(--texto);
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse at 10% 20%, rgba(201,168,76,0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 90% 80%, rgba(92,61,30,0.06) 0%, transparent 50%);
+    }
+    .navbar {
+      background: linear-gradient(135deg, var(--azul-noche) 0%, #2a3f6e 100%);
+      border-bottom: 3px solid var(--dorado);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+    .navbar-brand { font-family: 'Merriweather', serif; font-size: 1.4rem; color: var(--dorado) !important; }
+    .nav-link-custom { font-size: 0.85rem; color: #cbd5e1; text-decoration: none; padding: 0.4rem 0.8rem; border-radius: 6px; transition: color 0.2s; }
+    .nav-link-custom:hover { color: var(--dorado); background: rgba(201,168,76,0.1); }
+    .btn-logout { font-size: 0.8rem; background: rgba(201,168,76,0.15); border: 1px solid var(--dorado); color: var(--dorado); padding: 0.35rem 0.9rem; border-radius: 20px; text-decoration: none; transition: all 0.2s; }
+    .btn-logout:hover { background: var(--dorado); color: var(--azul-noche); }
+    .page-hero { background: linear-gradient(135deg, var(--azul-noche) 0%, #2a3f6e 60%, #1a2744 100%); padding: 2.5rem 1.5rem; position: relative; overflow: hidden; }
+    .page-hero::before { content: '📚'; position: absolute; right: 5%; top: 50%; transform: translateY(-50%); font-size: 7rem; opacity: 0.07; }
+    .page-hero h1 { font-family: 'Merriweather', serif; color: var(--crema); font-size: 1.9rem; }
+    .dorado-text { color: var(--dorado); }
+    .card-literaria { background: #fff; border: 1px solid #e8dcc8; border-radius: 14px; box-shadow: 0 4px 16px rgba(92,61,30,0.08); transition: box-shadow 0.25s, transform 0.25s; overflow: hidden; }
+    .card-literaria:hover { box-shadow: 0 8px 28px rgba(92,61,30,0.14); transform: translateY(-2px); }
+    .card-header-literaria { background: linear-gradient(135deg, var(--crema-oscuro), #ede8d8); border-bottom: 2px solid #e0d4b8; padding: 1rem 1.5rem; display: flex; align-items: center; gap: 0.6rem; }
+    .card-header-literaria h2 { font-family: 'Lora', serif; font-size: 1.05rem; color: var(--cafe); font-weight: 600; margin: 0; }
+    .card-header-literaria i { color: var(--dorado-oscuro); font-size: 1rem; }
+    .input-literario { width: 100%; padding: 0.6rem 0.85rem; border: 1.5px solid #ddd0b8; border-radius: 8px; font-family: 'Open Sans', sans-serif; font-size: 0.88rem; background: var(--crema); color: var(--texto); transition: border-color 0.2s, box-shadow 0.2s; }
+    .input-literario:focus { outline: none; border-color: var(--dorado); box-shadow: 0 0 0 3px rgba(201,168,76,0.15); }
+    .label-literario { font-size: 0.78rem; font-weight: 600; color: var(--cafe-claro); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.3rem; display: block; }
+    .btn-primario { background: linear-gradient(135deg, var(--cafe) 0%, var(--cafe-claro) 100%); color: var(--crema); font-family: 'Lora', serif; font-weight: 600; font-size: 0.9rem; padding: 0.65rem 1.5rem; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.4rem; }
+    .btn-primario:hover { background: linear-gradient(135deg, #3d2210 0%, var(--cafe) 100%); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(92,61,30,0.3); }
+    .btn-catalogo { background: linear-gradient(135deg, var(--azul-noche), #2a3f6e); color: var(--crema); font-family: 'Lora', serif; font-weight: 600; font-size: 0.9rem; padding: 0.65rem 1.5rem; border-radius: 8px; border: 2px solid var(--dorado); cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; }
+    .btn-catalogo:hover { background: var(--dorado); color: var(--azul-noche); transform: translateY(-1px); }
+    .badge-activo { background: #dcfce7; color: #166534; font-size: 0.72rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 20px; display: inline-flex; align-items: center; gap: 0.3rem; }
+    .badge-devuelto { background: #f1f5f9; color: #64748b; font-size: 0.72rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 20px; }
+    .badge-vencimiento { background: #fef3c7; color: #92400e; font-size: 0.72rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 20px; display: inline-flex; align-items: center; gap: 0.3rem; }
+    .badge-vencido { background: #fee2e2; color: #991b1b; font-size: 0.72rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 20px; display: inline-flex; align-items: center; gap: 0.3rem; }
+    .tabla-literaria { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .tabla-literaria thead tr { background: linear-gradient(135deg, var(--crema-oscuro), #ede8d8); border-bottom: 2px solid #e0d4b8; }
+    .tabla-literaria thead th { padding: 0.75rem 1rem; font-family: 'Lora', serif; font-weight: 600; color: var(--cafe); text-align: left; font-size: 0.82rem; }
+    .tabla-literaria tbody tr { border-bottom: 1px solid #f0e8d8; transition: background 0.15s; }
+    .tabla-literaria tbody tr:hover { background: #fffbf2; }
+    .tabla-literaria tbody td { padding: 0.75rem 1rem; color: var(--texto); }
+    .alerta-vencimiento { background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1.5px solid #f59e0b; border-left: 5px solid #d97706; border-radius: 10px; padding: 1rem 1.2rem; display: flex; align-items: flex-start; gap: 0.8rem; }
+    .alerta-vencimiento i { color: #d97706; font-size: 1.1rem; margin-top: 0.1rem; }
+    .stat-card { background: linear-gradient(135deg, #fff, var(--crema-oscuro)); border: 1px solid #e8dcc8; border-radius: 12px; padding: 1.2rem; text-align: center; }
+    .stat-numero { font-family: 'Merriweather', serif; font-size: 2rem; font-weight: 700; color: var(--cafe); line-height: 1; }
+    .stat-label { font-size: 0.75rem; color: var(--cafe-claro); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.3rem; }
+    .empty-state { text-align: center; padding: 2.5rem 1rem; color: #a0856a; }
+    .empty-state i { font-size: 2.5rem; opacity: 0.4; margin-bottom: 0.8rem; display: block; }
+    .empty-state p { font-family: 'Lora', serif; font-style: italic; font-size: 0.9rem; }
+    .fade-in { animation: fadeIn 0.5s ease-in-out both; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in:nth-child(1) { animation-delay: 0.05s; }
+    .fade-in:nth-child(2) { animation-delay: 0.12s; }
+    .fade-in:nth-child(3) { animation-delay: 0.19s; }
+    .fade-in:nth-child(4) { animation-delay: 0.26s; }
+    .divisor-literario { text-align: center; color: var(--dorado); font-size: 1.1rem; letter-spacing: 0.5rem; opacity: 0.5; margin: 0.5rem 0; }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <i class="fas fa-book-open dorado-text text-xl"></i>
+      <span class="navbar-brand">Entre Páginas</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <a th:href="@{/catalogo}" class="nav-link-custom"><i class="fas fa-search mr-1"></i>Catálogo</a>
+      <a th:href="@{/logout}" class="btn-logout"><i class="fas fa-sign-out-alt mr-1"></i>Salir</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="page-hero">
+    <div class="max-w-5xl mx-auto">
+      <p class="text-sm mb-1" style="color:var(--dorado); font-family:'Lora',serif; font-style:italic;">Bienvenido/a de vuelta</p>
+      <h1 class="fade-in" th:text="${cliente != null ? cliente.nombre : usuario.correo}">Nombre</h1>
+      <p class="fade-in mt-1" style="color:#94a3b8; font-size:0.9rem;" th:text="${usuario.correo}">correo@ejemplo.com</p>
+      <div class="divisor-literario mt-3">✦ ✦ ✦</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="max-w-5xl mx-auto px-4 py-8">
+
+    <!-- ALERTAS VENCIMIENTO -->
+    <div th:if="${prestamos != null}" class="mb-6 fade-in">
+      <div th:each="prestamo : ${prestamos}"
+           th:if="${prestamo.activo and prestamo.fechaDevolucion != null and prestamo.fechaDevolucion.isBefore(T(java.time.LocalDate).now().plusDays(4))}">
+        <div class="alerta-vencimiento mb-3">
+          <i class="fas fa-exclamation-triangle"></i>
+          <div>
+            <p style="font-family:'Lora',serif; font-weight:600; font-size:0.9rem; color:#92400e;">
+              <span th:if="${prestamo.fechaDevolucion.isBefore(T(java.time.LocalDate).now())}">Préstamo vencido</span>
+              <span th:unless="${prestamo.fechaDevolucion.isBefore(T(java.time.LocalDate).now())}">Vence en menos de 3 días</span>
+            </p>
+            <p style="font-size:0.82rem; color:#78350f;"
+               th:text="'«' + ${prestamo.libro.titulo} + '» — fecha límite: ' + ${prestamo.fechaDevolucion}">detalle</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="grid grid-cols-3 gap-4 mb-8 fade-in">
+      <div class="stat-card">
+        <div class="stat-numero dorado-text" th:text="${prestamos != null ? #lists.size(prestamos) : 0}">0</div>
+        <div class="stat-label">Préstamos totales</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-numero" style="color:#166534;" th:text="${prestamos != null ? prestamos.?[activo == true].size() : 0}">0</div>
+        <div class="stat-label">Activos ahora</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-numero" style="color:#1e3a8a;" th:text="${ventas != null ? #lists.size(ventas) : 0}">0</div>
+        <div class="stat-label">Compras realizadas</div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- PERFIL -->
+      <div class="lg:col-span-1 fade-in">
+        <div class="card-literaria">
+          <div class="card-header-literaria">
+            <i class="fas fa-user-circle"></i>
+            <h2>Mi Perfil</h2>
+          </div>
+          <div class="p-5">
+            <form th:action="@{/mi-cuenta/actualizar}" method="post">
+              <div class="mb-4">
+                <label class="label-literario">Nombre completo</label>
+                <input type="text" name="nombre" class="input-literario"
+                       th:value="${cliente != null ? cliente.nombre : ''}" placeholder="Tu nombre" />
+              </div>
+              <div class="mb-4">
+                <label class="label-literario">DNI</label>
+                <input type="text" name="dni" class="input-literario"
+                       th:value="${cliente != null ? cliente.dni : ''}" placeholder="00000000" maxlength="8" />
+              </div>
+              <div class="mb-4">
+                <label class="label-literario">Teléfono</label>
+                <input type="text" name="telefono" class="input-literario"
+                       th:value="${cliente != null ? cliente.telefono : ''}" placeholder="999 000 000" />
+              </div>
+              <div class="mb-5">
+                <label class="label-literario">Dirección</label>
+                <input type="text" name="direccion" class="input-literario"
+                       th:value="${cliente != null ? cliente.direccion : ''}" placeholder="Av. Los Libros 123" />
+              </div>
+              <div class="mb-5 p-3 rounded-lg" style="background:var(--crema-oscuro); border:1px solid #e0d4b8;">
+                <span class="label-literario">Correo (no editable)</span>
+                <p style="font-size:0.88rem; color:var(--cafe-claro);" th:text="${usuario.correo}">correo@ejemplo.com</p>
+              </div>
+              <button type="submit" class="btn-primario w-full justify-center">
+                <i class="fas fa-save"></i> Guardar cambios
+              </button>
+            </form>
+            <div class="divisor-literario mt-4">· · ·</div>
+            <a th:href="@{/catalogo}" class="btn-catalogo w-full justify-center mt-3">
+              <i class="fas fa-book"></i> Explorar catálogo
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTORIAL -->
+      <div class="lg:col-span-2 flex flex-col gap-6">
+
+        <!-- Préstamos activos -->
+        <div class="card-literaria fade-in">
+          <div class="card-header-literaria">
+            <i class="fas fa-book-reader"></i>
+            <h2>Préstamos activos</h2>
+          </div>
+          <div class="p-4">
+            <div th:if="${prestamos == null or prestamos.?[activo == true].isEmpty()}" class="empty-state">
+              <i class="fas fa-bookmark"></i>
+              <p>No tienes préstamos activos en este momento.</p>
+            </div>
+            <div th:unless="${prestamos == null or prestamos.?[activo == true].isEmpty()}" class="overflow-x-auto">
+              <table class="tabla-literaria">
+                <thead><tr><th>Libro</th><th>Desde</th><th>Devolución</th><th>Estado</th></tr></thead>
+                <tbody>
+                  <tr th:each="prestamo : ${prestamos}" th:if="${prestamo.activo}">
+                    <td>
+                      <span style="font-family:'Lora',serif; font-weight:600;" th:text="${prestamo.libro.titulo}">Título</span><br/>
+                      <span style="font-size:0.75rem; color:#a0856a;" th:text="${prestamo.libro.autor}">Autor</span>
+                    </td>
+                    <td th:text="${prestamo.fechaPrestamo}">-</td>
+                    <td th:text="${prestamo.fechaDevolucion != null ? prestamo.fechaDevolucion : 'Sin fecha'}">-</td>
+                    <td>
+                      <span th:if="${prestamo.fechaDevolucion != null and prestamo.fechaDevolucion.isBefore(T(java.time.LocalDate).now())}" class="badge-vencido">
+                        <i class="fas fa-exclamation-circle"></i> Vencido
+                      </span>
+                      <span th:if="${prestamo.fechaDevolucion != null and !prestamo.fechaDevolucion.isBefore(T(java.time.LocalDate).now()) and prestamo.fechaDevolucion.isBefore(T(java.time.LocalDate).now().plusDays(4))}" class="badge-vencimiento">
+                        <i class="fas fa-clock"></i> Vence pronto
+                      </span>
+                      <span th:if="${prestamo.fechaDevolucion == null or prestamo.fechaDevolucion.isAfter(T(java.time.LocalDate).now().plusDays(3))}" class="badge-activo">
+                        <i class="fas fa-circle" style="font-size:0.5rem;"></i> Activo
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Historial préstamos -->
+        <div class="card-literaria fade-in">
+          <div class="card-header-literaria">
+            <i class="fas fa-history"></i>
+            <h2>Historial de préstamos</h2>
+          </div>
+          <div class="p-4">
+            <div th:if="${prestamos == null or prestamos.?[activo == false].isEmpty()}" class="empty-state">
+              <i class="fas fa-scroll"></i>
+              <p>Aún no has devuelto ningún libro.</p>
+            </div>
+            <div th:unless="${prestamos == null or prestamos.?[activo == false].isEmpty()}" class="overflow-x-auto">
+              <table class="tabla-literaria">
+                <thead><tr><th>Libro</th><th>Préstamo</th><th>Devolución</th><th>Estado</th></tr></thead>
+                <tbody>
+                  <tr th:each="prestamo : ${prestamos}" th:unless="${prestamo.activo}">
+                    <td style="font-family:'Lora',serif;" th:text="${prestamo.libro.titulo}">Título</td>
+                    <td th:text="${prestamo.fechaPrestamo}">-</td>
+                    <td th:text="${prestamo.fechaDevolucion}">-</td>
+                    <td><span class="badge-devuelto">✓ Devuelto</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Compras -->
+        <div class="card-literaria fade-in">
+          <div class="card-header-literaria">
+            <i class="fas fa-shopping-bag"></i>
+            <h2>Mis compras</h2>
+          </div>
+          <div class="p-4">
+            <div th:if="${ventas == null or #lists.isEmpty(ventas)}" class="empty-state">
+              <i class="fas fa-bag-shopping"></i>
+              <p>Todavía no has realizado ninguna compra.</p>
+            </div>
+            <div th:unless="${ventas == null or #lists.isEmpty(ventas)}" class="overflow-x-auto">
+              <table class="tabla-literaria">
+                <thead><tr><th>#</th><th>Fecha</th><th>Libros</th><th>Total</th><th>Estado</th></tr></thead>
+                <tbody>
+                  <tr th:each="venta : ${ventas}">
+                    <td style="color:var(--cafe-claro); font-weight:600;" th:text="'#' + ${venta.id}">-</td>
+                    <td th:text="${#temporals.format(venta.fechaVenta, 'dd/MM/yyyy')}">-</td>
+                    <td>
+                      <span th:each="detalle, stat : ${venta.detallesVenta}">
+                        <span th:text="${detalle.libro.titulo}">Libro</span><span th:unless="${stat.last}">, </span>
+                      </span>
+                    </td>
+                    <td style="font-weight:600; color:var(--cafe);"
+                        th:text="'S/ ' + ${#numbers.formatDecimal(venta.total, 1, 2)}">S/ 0.00</td>
+                    <td>
+                      <span th:if="${venta.anulada}" class="badge-vencido">Anulada</span>
+                      <span th:unless="${venta.anulada}" class="badge-activo"><i class="fas fa-circle" style="font-size:0.5rem;"></i> Completada</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer style="background:linear-gradient(135deg,var(--azul-noche),#2a3f6e); border-top:3px solid var(--dorado);" class="text-center py-4 mt-8">
+    <p style="color:#94a3b8; font-size:0.8rem;">© 2025 Entre Páginas | <a href="mailto:info@entrepaginas.org" style="color:var(--dorado);">info@entrepaginas.org</a></p>
+  </footer>
+
+  <script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+      const guardado = /*[[${param.guardado}]]*/ null;
+      const errorMsg = /*[[${error}]]*/ null;
+      if (guardado) {
+        Swal.fire({ icon: 'success', title: '¡Guardado!', text: 'Tu perfil fue actualizado correctamente.', confirmButtonColor: '#5c3d1e', background: '#fffef0' });
+      }
+      if (errorMsg) {
+        Swal.fire({ icon: 'error', title: 'Error', text: errorMsg, confirmButtonColor: '#5c3d1e', background: '#fffef0' });
+      }
+    });
+  </script>
+</body>
+</html>

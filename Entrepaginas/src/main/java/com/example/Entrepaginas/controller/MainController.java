@@ -13,6 +13,7 @@ public class MainController {
         return "maraton";
     }
 
+
     @GetMapping({"/eventos", "/eventos.html"})
     public String eventos() {
         return "eventos";

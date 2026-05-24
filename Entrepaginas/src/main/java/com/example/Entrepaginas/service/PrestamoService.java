@@ -25,6 +25,10 @@ public class PrestamoService {
         return prestamoRepository.findAll();
     }
 
+    public List<Prestamo> obtenerPrestamosPorCliente(Long clienteId) {
+    return prestamoRepository.findByClienteId(clienteId);
+}
+
     public Prestamo obtenerPorId(Long id) {
         return prestamoRepository.findById(id).orElse(null);
     }

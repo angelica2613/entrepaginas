@@ -6,14 +6,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Data // This annotation generates the correct getRol(), setRol(), etc.
-@Table(name = "usuario") // Good practice to explicitly name your table
+@Data
+@Table(name = "usuario")
 @NoArgsConstructor
 @AllArgsConstructor
 public class Usuario {
-
-    // REMOVED: public String getRol; (Incorrect field)
-    // REMOVED: public Object getRol() { return null; } (Incorrect manual method)
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,9 +20,13 @@ public class Usuario {
     private String correo;
 
     @Column(nullable = false)
-    private String contrasena; // Note: In a real app, this should be HASHED.
+    private String contrasena;
 
     @Column(nullable = false)
-    private String rol; // Lombok will generate getRol() and setRol() for this field.
+    private String rol; // "ADMIN", "CLIENTE"
 
+    // Relación con Cliente (un usuario puede tener un perfil de cliente)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "cliente_id", referencedColumnName = "id")
+    private Cliente cliente;
 }

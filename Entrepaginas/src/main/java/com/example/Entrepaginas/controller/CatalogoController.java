@@ -15,30 +15,26 @@ import java.util.Map;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/catalogos")
 public class CatalogoController {
 
     @Autowired
     private CatalagoService catalogoService;
 
-    @GetMapping
+
+    // Catálogo PÚBLICO
+    @GetMapping({"/",  "" ,"/catalogo", "/biblioteca", "/index"})
     public String mostrarCatalogo(
             @RequestParam(value = "genero", required = false) String genero,
             @RequestParam(value = "query", required = false) String query,
             Model model,
             HttpSession session) {
 
-        Object nombre = session.getAttribute("usuarioNombre");
-        if (nombre == null) {
-            return "redirect:/entrepaginas/login";
-        }
-
         List<Libro> libros;
         if (query != null && !query.isEmpty()) {
             libros = catalogoService.buscarLibros(query);
             if (genero != null && !genero.isEmpty()) {
                 libros = libros.stream()
-                        .filter(libro -> genero.equalsIgnoreCase(libro.getGenero()))
+                        .filter(l -> genero.equalsIgnoreCase(l.getGenero()))
                         .toList();
             }
         } else if (genero != null && !genero.isEmpty()) {
@@ -50,91 +46,75 @@ public class CatalogoController {
         model.addAttribute("libros", libros);
         model.addAttribute("generoSeleccionado", genero);
         model.addAttribute("queryBusqueda", query);
-        model.addAttribute("usuarioNombre", nombre.toString());
+
+        // Para el navbar — sin requerir sesión
+        model.addAttribute("usuarioLogueado", session.getAttribute("usuarioLogueado"));
+        model.addAttribute("usuarioNombre", session.getAttribute("usuarioNombre"));
         model.addAttribute("usuarioRol", session.getAttribute("usuarioRol"));
 
-        return "catalogo";
+        return "biblioteca";
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/catalogo/{id}")
     public String mostrarDetalleLibro(@PathVariable Long id, Model model, HttpSession session) {
-        Object nombre = session.getAttribute("usuarioNombre");
-        if (nombre == null) {
-            return "redirect:/entrepaginas/login";
-        }
-
         Optional<Libro> libro = catalogoService.getLibroById(id);
         if (libro.isPresent()) {
             model.addAttribute("libro", libro.get());
-            model.addAttribute("usuarioNombre", nombre.toString());
-            model.addAttribute("usuarioRol", session.getAttribute("usuarioRol"));
+            model.addAttribute("usuarioLogueado", session.getAttribute("usuarioLogueado"));
+            model.addAttribute("usuarioNombre", session.getAttribute("usuarioNombre"));
             return "detalle-libro";
-        } else {
-            return "redirect:/catalogo?error=LibroNoEncontrado";
         }
+        return "redirect:/catalogo?error=LibroNoEncontrado";
     }
 
-    @PutMapping("/prestar/{id}")
+    @PutMapping("/catalogo/prestar/{id}")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> prestarLibro(@PathVariable Long id) {
         Libro prestado = catalogoService.prestarLibro(id);
         if (prestado != null) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Libro prestado exitosamente.");
-            response.put("libro", prestado);
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Libro no disponible o no encontrado."));
+            return ResponseEntity.ok(Map.of("success", true, "message", "Libro prestado.", "libro", prestado));
         }
+        return ResponseEntity.badRequest().body(Map.of("success", false, "message", "No disponible."));
     }
 
-    @PutMapping("/devolver/{id}")
+    @PutMapping("/catalogo/devolver/{id}")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> devolverLibro(@PathVariable Long id) {
         Libro devuelto = catalogoService.devolverLibro(id);
         if (devuelto != null) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Libro devuelto exitosamente.");
-            response.put("libro", devuelto);
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Libro no encontrado."));
+            return ResponseEntity.ok(Map.of("success", true, "message", "Libro devuelto.", "libro", devuelto));
         }
+        return ResponseEntity.badRequest().body(Map.of("success", false, "message", "No encontrado."));
     }
 
-    // NUEVO ENDPOINT: Para cambiar la disponibilidad de un libro
-    @PutMapping("/toggle-disponibilidad/{id}")
+    @PutMapping("/catalogo/toggle-disponibilidad/{id}")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> toggleDisponibilidad(@PathVariable Long id, @RequestBody Map<String, Boolean> payload) {
+    public ResponseEntity<Map<String, Object>> toggleDisponibilidad(
+            @PathVariable Long id, @RequestBody Map<String, Boolean> payload) {
         Map<String, Object> response = new HashMap<>();
         try {
             Boolean nuevoEstado = payload.get("disponible");
             if (nuevoEstado == null) {
                 response.put("success", false);
-                response.put("message", "El estado de disponibilidad es requerido.");
+                response.put("message", "El estado es requerido.");
                 return ResponseEntity.badRequest().body(response);
             }
-
             Optional<Libro> optionalLibro = catalogoService.getLibroById(id);
             if (optionalLibro.isPresent()) {
                 Libro libro = optionalLibro.get();
                 libro.setDisponible(nuevoEstado);
-                catalogoService.saveLibro(libro); // Asumiendo que saveLibro actualiza si el ID existe
-
+                catalogoService.saveLibro(libro);
                 response.put("success", true);
-                response.put("message", "Disponibilidad del libro actualizada a " + (nuevoEstado ? "DISPONIBLE" : "NO DISPONIBLE") + ".");
+                response.put("message", "Disponibilidad actualizada.");
                 response.put("libro", libro);
                 return ResponseEntity.ok(response);
-            } else {
-                response.put("success", false);
-                response.put("message", "Libro no encontrado con ID: " + id);
-                return ResponseEntity.notFound().build();
             }
+            response.put("success", false);
+            response.put("message", "Libro no encontrado.");
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "Error interno al actualizar disponibilidad: " + e.getMessage());
+            response.put("message", "Error: " + e.getMessage());
             return ResponseEntity.internalServerError().body(response);
         }
     }

@@ -24,6 +24,10 @@ public class VentaService {
 
     @Autowired
     private LibroRepository libroRepository;
+
+    public List<Venta> obtenerVentasPorCliente(Long clienteId) {
+    return ventaRepository.findByClienteId(clienteId);
+}
     
     // Asumimos que también tienes ClienteRepository y UsuarioRepository inyectados si son necesarios
     // para buscar entidades completas en otros métodos del service.

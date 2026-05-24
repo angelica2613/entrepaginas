@@ -29,5 +29,5 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
 
     @Query("SELECT DISTINCT v FROM Venta v LEFT JOIN FETCH v.cliente LEFT JOIN FETCH v.usuario")
     List<Venta> findAllWithClienteAndUsuario();
-
+    List<Venta> findByClienteId(Long clienteId);
 }

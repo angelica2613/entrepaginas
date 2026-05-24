@@ -29,7 +29,8 @@ public class SessionInterceptor implements HandlerInterceptor {
         // sesión.
         if (session == null || session.getAttribute("usuarioLogueado") == null) {
             // Si el usuario no ha iniciado sesión, lo redirige a la página de login.
-            response.sendRedirect("/login");
+            //agreado el contexto de la aplicación para asegurar que la redirección funcione correctamente sin importar dónde esté desplegada la aplicación.
+            response.sendRedirect(request.getContextPath() + "/login");
             // Devuelve 'false' para detener el procesamiento de la petición. El controlador
             // correspondiente a la URL solicitada no se ejecutará.
             return false; // Detiene la ejecución de la petición

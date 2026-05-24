@@ -26,15 +26,23 @@ public class LoginController {
 
     @PostMapping("/acceder")
     public String processLogin(@RequestParam String correo,
-                           @RequestParam String contrasena,
-                           Model model,
-                           HttpSession session) {
+                        @RequestParam String contrasena,
+                        Model model,
+                        HttpSession session) {
         Usuario usuario = usuarioRepository.findByCorreo(correo);
         if (usuario != null && passwordEncoder.matches(contrasena, usuario.getContrasena())) {
-            // Guardar datos en sesión
+            // Guardar el objeto completo para que SessionInterceptor lo encuentre
+            session.setAttribute("usuarioLogueado", usuario);
             session.setAttribute("usuarioNombre", usuario.getCorreo());
             session.setAttribute("usuarioRol", usuario.getRol());
-            return "redirect:/dashboard";
+            session.setAttribute("usuarioId", usuario.getId());
+
+            // Redirigir según rol
+            if ("ADMIN".equals(usuario.getRol())) {
+                return "redirect:/dashboard";
+            } else {
+                return "redirect:/mi-cuenta";
+            }
         } else {
             model.addAttribute("error", "Usuario o contraseña incorrectos.");
             return "login";
@@ -43,8 +51,8 @@ public class LoginController {
 
 
     @GetMapping("/logout")
-    public String logout() {
-        SecurityContextHolder.clearContext();
+    public String logout(HttpSession session) {
+        session.invalidate(); // limpia toda la sesión
         return "redirect:/login?logout";
     }
 
