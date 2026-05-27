@@ -60,6 +60,7 @@ public class PrestamoController {
     public String guardarPrestamo(@ModelAttribute Prestamo prestamo, 
                                 @RequestParam Long clienteId, 
                                 @RequestParam Long libroId,
+                                @RequestParam(required = false) String fechaDevolucionEstimada, 
                                 HttpSession session) {
         Object nombre = session.getAttribute("usuarioNombre");
         if (nombre == null) {
@@ -75,6 +76,10 @@ public class PrestamoController {
             prestamo.setFechaPrestamo(LocalDate.now());
             prestamo.setActivo(true);
             libro.setDisponible(false);
+        
+        if (fechaDevolucionEstimada != null && !fechaDevolucionEstimada.isEmpty()) {
+            prestamo.setFechaDevolucion(LocalDate.parse(fechaDevolucionEstimada));
+        }
             
             libroService.guardar(libro);
             prestamoService.guardar(prestamo);
