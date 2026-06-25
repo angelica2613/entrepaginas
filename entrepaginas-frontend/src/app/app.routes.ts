@@ -1,0 +1,32 @@
+import { Routes } from '@angular/router';
+import { Catalogo } from './pages/catalogo/catalogo';
+import { Login } from './pages/login/login';
+import { Registro } from './pages/registro/registro';
+import { MiCuenta } from './pages/mi-cuenta/mi-cuenta';
+import { Dashboard } from './pages/dashboard/dashboard';
+import { Libros } from './pages/libros/libros';
+import { Clientes } from './pages/clientes/clientes';
+import { Usuarios } from './pages/usuarios/usuarios';
+import { Prestamos } from './pages/prestamos/prestamos';
+import { Ventas } from './pages/ventas/ventas';
+import { Categorias } from './pages/categorias/categorias';
+import { Perfiles } from './pages/perfiles/perfiles';
+import { Home } from './pages/home/home';
+
+export const routes: Routes = [
+  { path: '', component: Home },
+  { path: 'home', component: Home },
+  { path: 'catalogo', component: Catalogo },
+  { path: 'login', component: Login },
+  { path: 'registro', component: Registro },
+  { path: 'mi-cuenta', component: MiCuenta },
+  { path: 'dashboard', component: Dashboard },
+  { path: 'libros', component: Libros },
+  { path: 'clientes', component: Clientes },
+  { path: 'usuarios', component: Usuarios },
+  { path: 'prestamos', component: Prestamos },
+  { path: 'ventas', component: Ventas },
+  { path: 'categorias', component: Categorias },
+  { path: 'perfiles', component: Perfiles },
+  { path: '**', redirectTo: 'catalogo' }
+];
