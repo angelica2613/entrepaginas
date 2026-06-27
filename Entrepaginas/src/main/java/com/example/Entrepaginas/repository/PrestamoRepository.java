@@ -19,5 +19,6 @@ public interface PrestamoRepository extends JpaRepository<Prestamo, Long> {
     Long countByFechaDevolucionBeforeAndActivoTrue(LocalDate fecha);
     
     List<Prestamo> findByClienteId(Long clienteId);
+    long countByLibroId(Long libroId);
 }
 

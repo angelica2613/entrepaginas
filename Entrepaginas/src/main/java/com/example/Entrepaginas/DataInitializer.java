@@ -16,7 +16,7 @@ public class DataInitializer {
             if (usuarioRepository.findByCorreo("admin@entrepaginas.org") == null) {
                 Usuario usuario = new Usuario();
                 usuario.setCorreo("admin@entrepaginas.org");
-                usuario.setContrasena(passwordEncoder.encode("1234"));
+                usuario.setContrasena(passwordEncoder.encode("123456"));
                 usuario.setRol("ADMIN");
                 usuarioRepository.save(usuario);
             }

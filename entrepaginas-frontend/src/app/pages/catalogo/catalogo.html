@@ -1,3 +1,157 @@
-<div class="bg-blue-500 text-white p-8 text-center text-2xl font-bold">
-  ¡Tailwind funciona en Angular! 🎉
+<div class="catalogo-page">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <span class="brand-icon">📚</span>
+      <span class="brand-name">Entre Páginas</span>
+    </div>
+    <div class="nav-search">
+      <input
+        type="text"
+        [(ngModel)]="busqueda"
+        (input)="buscarLibros()"
+        placeholder="Buscar libros, autores..."
+        class="search-input"
+      />
+      <button *ngIf="busqueda" (click)="limpiarBusqueda()" class="btn-clear">✕</button>
+    </div>
+    <div class="nav-links">
+      <span class="nav-user">👤 {{ usuario?.correo }}</span>
+      <a routerLink="/mi-cuenta" class="nav-link">Mi cuenta</a>
+      <button (click)="cerrarSesion()" class="btn-logout">Salir</button>
+    </div>
+  </nav>
+
+  <main class="catalogo-main">
+
+    <!-- RESULTADOS DE BÚSQUEDA -->
+    <section *ngIf="buscando" class="seccion">
+      <h2 class="seccion-titulo">Resultados para "{{ busqueda }}"</h2>
+      <div *ngIf="resultadosBusqueda.length === 0" class="empty-msg">
+        No se encontraron libros.
+      </div>
+      <div class="libros-grid">
+        <div *ngFor="let libro of resultadosBusqueda" class="libro-card" (click)="abrirLibro(libro)">
+          <img [src]="getImagen(libro)" [alt]="libro.titulo" class="libro-img" />
+          <div class="libro-info">
+            <p class="libro-titulo">{{ libro.titulo }}</p>
+            <p class="libro-autor">{{ libro.autor }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTENIDO NORMAL -->
+    <ng-container *ngIf="!buscando">
+
+      <!-- MÁS POPULARES -->
+      <section class="seccion">
+        <h2 class="seccion-titulo">🔥 Más populares</h2>
+        <div class="libros-scroll">
+          <div *ngFor="let libro of populares" class="libro-card" (click)="abrirLibro(libro)">
+            <img [src]="getImagen(libro)" [alt]="libro.titulo" class="libro-img" />
+            <div class="libro-info">
+              <p class="libro-titulo">{{ libro.titulo }}</p>
+              <p class="libro-autor">{{ libro.autor }}</p>
+              <span class="libro-genero">{{ libro.genero }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MÁS RECIENTES -->
+      <section class="seccion">
+        <h2 class="seccion-titulo">🆕 Recién agregados</h2>
+        <div class="libros-scroll">
+          <div *ngFor="let libro of recientes" class="libro-card" (click)="abrirLibro(libro)">
+            <img [src]="getImagen(libro)" [alt]="libro.titulo" class="libro-img" />
+            <div class="libro-info">
+              <p class="libro-titulo">{{ libro.titulo }}</p>
+              <p class="libro-autor">{{ libro.autor }}</p>
+              <span class="libro-genero">{{ libro.genero }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TODOS LOS LIBROS -->
+      <section class="seccion">
+        <h2 class="seccion-titulo">📖 Todos los libros</h2>
+        <div class="libros-grid">
+          <div *ngFor="let libro of todos" class="libro-card" (click)="abrirLibro(libro)">
+            <img [src]="getImagen(libro)" [alt]="libro.titulo" class="libro-img" />
+            <div class="libro-info">
+              <p class="libro-titulo">{{ libro.titulo }}</p>
+              <p class="libro-autor">{{ libro.autor }}</p>
+              <span class="libro-genero">{{ libro.genero }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </ng-container>
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 Entre Páginas | <a href="mailto:info@entrepaginas.org">info&#64;entrepaginas.org</a></p>
+  </footer>
+</div>
+
+<!-- MODAL LIBRO -->
+<div class="modal-overlay" *ngIf="modalLibroAbierto" (click)="cerrarModalLibro()">
+  <div class="modal-libro" (click)="$event.stopPropagation()">
+    <button class="btn-cerrar" (click)="cerrarModalLibro()">✕</button>
+    <div class="modal-libro-content" *ngIf="libroSeleccionado">
+      <img [src]="getImagen(libroSeleccionado)" [alt]="libroSeleccionado.titulo" class="modal-img" />
+      <div class="modal-libro-info">
+        <h2>{{ libroSeleccionado.titulo }}</h2>
+        <p class="modal-autor">{{ libroSeleccionado.autor }}</p>
+        <span class="modal-genero">{{ libroSeleccionado.genero }}</span>
+        <p class="modal-desc" *ngIf="libroSeleccionado.descripcion">{{ libroSeleccionado.descripcion }}</p>
+        <div class="modal-disponible" [class.disponible]="libroSeleccionado.disponible"
+             [class.no-disponible]="!libroSeleccionado.disponible">
+          {{ libroSeleccionado.disponible ? '✅ Disponible' : '❌ No disponible' }}
+        </div>
+        <button *ngIf="libroSeleccionado.disponible" class="btn-solicitar" (click)="abrirSolicitud()">
+          📋 Solicitar préstamo
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PRÉSTAMO -->
+<div class="modal-overlay" *ngIf="modalPrestamoAbierto" (click)="cerrarModalPrestamo()">
+  <div class="modal-prestamo" (click)="$event.stopPropagation()">
+
+    <!-- ÉXITO -->
+    <div class="prestamo-exitoso" *ngIf="exitoPrestamo">
+      <div class="success-icon">✅</div>
+      <h3>¡Préstamo registrado!</h3>
+      <p>Tu solicitud fue enviada correctamente.</p>
+      <button class="btn-cerrar-exito" (click)="cerrarModalPrestamo()">Aceptar</button>
+    </div>
+
+    <ng-container *ngIf="!exitoPrestamo">
+      <button class="btn-cerrar" (click)="cerrarModalPrestamo()">✕</button>
+      <h3>📋 Solicitar préstamo</h3>
+      <p class="prestamo-libro">{{ libroSeleccionado?.titulo }}</p>
+
+      <div class="alert-error" *ngIf="errorPrestamo">⚠️ {{ errorPrestamo }}</div>
+
+      <div class="form-group">
+        <label>Fecha de devolución <span class="req">*</span></label>
+        <input type="date" [(ngModel)]="fechaDevolucion" [min]="fechaMinima" />
+      </div>
+
+      <div class="prestamo-info">
+        <p>👤 <strong>Cliente:</strong> {{ usuario?.correo }}</p>
+      </div>
+
+      <button class="btn-confirmar" (click)="solicitarPrestamo()" [disabled]="cargandoPrestamo">
+        {{ cargandoPrestamo ? '⏳ Procesando...' : '✅ Confirmar préstamo' }}
+      </button>
+    </ng-container>
+  </div>
 </div>

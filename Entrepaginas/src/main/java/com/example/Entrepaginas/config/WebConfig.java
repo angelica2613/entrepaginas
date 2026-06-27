@@ -59,6 +59,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/catalogo/**",
                         "/login",
                         "/registro",
+                        "/api/**",
                         "/acceder",
                         "/logout",
                         "/registro",
