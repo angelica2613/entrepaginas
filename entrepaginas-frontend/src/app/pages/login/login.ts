@@ -1,43 +1,159 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-login',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, CommonModule],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
 export class Login {
+  // LOGIN
   correo = '';
   contrasena = '';
-  error = '';
-  cargando = false;
+  errorLogin = '';
+  cargandoLogin = false;
+  verContrasena = false;
+
+  // REGISTRO MODAL
+  modalAbierto = false;
+  regNombre = '';
+  regCorreo = '';
+  regPassword = '';
+  regConfirmPassword = '';
+  regDni = '';
+  regTelefono = '';
+  errorRegistro = '';
+  cargandoRegistro = false;
+  registroExitoso = false;
+  verPasswordReg = false;
+  errores: any = {};
 
   constructor(private auth: AuthService, private router: Router) {}
 
+  // ── LOGIN ──
   iniciarSesion() {
-    this.error = '';
-    this.cargando = true;
+    this.errorLogin = '';
+    if (!this.correo) { this.errorLogin = 'El correo es obligatorio'; return; }
+    if (!this.contrasena) { this.errorLogin = 'La contraseña es obligatoria'; return; }
+    if (!this.validarEmail(this.correo)) { this.errorLogin = 'El correo no es válido'; return; }
 
+    this.cargandoLogin = true;
     this.auth.login(this.correo, this.contrasena).subscribe({
       next: (res: any) => {
         if (res.success) {
           this.auth.guardarSesion(res);
-          if (res.rol === 'ADMIN') {
-            this.router.navigate(['/dashboard']);
-          } else {
-            this.router.navigate(['/catalogo']);
-          }
+          this.router.navigate([res.rol === 'ADMIN' ? '/dashboard' : '/catalogo']);
         } else {
-          this.error = res.message;
+          this.errorLogin = res.message || 'Credenciales incorrectas';
         }
-        this.cargando = false;
+        this.cargandoLogin = false;
       },
       error: () => {
-        this.error = 'Correo o contraseña incorrectos';
-        this.cargando = false;
+        this.errorLogin = 'Correo o contraseña incorrectos';
+        this.cargandoLogin = false;
+      }
+    });
+  }
+
+  // ── MODAL ──
+  abrirModal() {
+    this.modalAbierto = true;
+    this.limpiarRegistro();
+  }
+
+  cerrarModal() {
+    this.modalAbierto = false;
+    this.limpiarRegistro();
+  }
+
+  limpiarRegistro() {
+    this.regNombre = ''; this.regCorreo = ''; this.regPassword = '';
+    this.regConfirmPassword = ''; this.regDni = ''; this.regTelefono = '';
+    this.errorRegistro = ''; this.errores = {};
+    this.registroExitoso = false; this.cargandoRegistro = false;
+  }
+
+  irAlLogin() {
+    this.cerrarModal();
+    // El login ya está en esta página, solo cerramos el modal
+  }
+
+  // ── VALIDACIONES EN TIEMPO REAL ──
+  validarCampo(campo: string) {
+    switch(campo) {
+      case 'nombre':
+        this.errores.nombre = this.regNombre.trim().length < 3
+          ? 'El nombre debe tener al menos 3 caracteres' : '';
+        break;
+      case 'correo':
+        this.errores.correo = !this.validarEmail(this.regCorreo)
+          ? 'El correo no es válido' : '';
+        break;
+      case 'password':
+        this.errores.password = this.regPassword.length < 6
+          ? 'La contraseña debe tener al menos 6 caracteres' : '';
+        if (this.regConfirmPassword) this.validarCampo('confirmPassword');
+        break;
+      case 'confirmPassword':
+        this.errores.confirmPassword = this.regPassword !== this.regConfirmPassword
+          ? 'Las contraseñas no coinciden' : '';
+        break;
+      case 'dni':
+        this.errores.dni = !/^\d{8}$/.test(this.regDni)
+          ? 'El DNI debe tener exactamente 8 dígitos' : '';
+        break;
+      case 'telefono':
+        this.errores.telefono = !/^\d{9}$/.test(this.regTelefono)
+          ? 'El teléfono debe tener 9 dígitos' : '';
+        break;
+    }
+  }
+
+  validarEmail(email: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  formularioValido(): boolean {
+    return this.regNombre.trim().length >= 3 &&
+           this.validarEmail(this.regCorreo) &&
+           this.regPassword.length >= 6 &&
+           this.regPassword === this.regConfirmPassword &&
+           /^\d{8}$/.test(this.regDni) &&
+           /^\d{9}$/.test(this.regTelefono);
+  }
+
+  registrar() {
+    this.validarCampo('nombre');
+    this.validarCampo('correo');
+    this.validarCampo('password');
+    this.validarCampo('confirmPassword');
+    this.validarCampo('dni');
+    this.validarCampo('telefono');
+
+    if (!this.formularioValido()) {
+      this.errorRegistro = 'Por favor corrige los errores antes de continuar';
+      return;
+    }
+
+    this.cargandoRegistro = true;
+    this.errorRegistro = '';
+
+    this.auth.registro(this.regCorreo, this.regPassword).subscribe({
+      next: (res: any) => {
+        if (res.success) {
+          this.registroExitoso = true;
+        } else {
+          this.errorRegistro = res.message || 'Error al crear la cuenta';
+        }
+        this.cargandoRegistro = false;
+      },
+      error: () => {
+        this.errorRegistro = 'Error de conexión con el servidor';
+        this.cargandoRegistro = false;
       }
     });
   }

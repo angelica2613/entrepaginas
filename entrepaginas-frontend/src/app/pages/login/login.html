@@ -1,34 +1,165 @@
 <div class="login-page">
-  <div class="login-card">
-    <div class="login-header">
-      <span class="login-icon">📚</span>
-      <h1>Entre Páginas</h1>
-      <p>Inicia sesión para continuar</p>
+  <main>
+    <div class="login-card">
+      <!-- Header -->
+      <div class="login-header">
+        <div class="book-icon">📚</div>
+        <h1>Entre Páginas</h1>
+        <p>¡Abre la magia de la lectura!</p>
+      </div>
+
+      <!-- Error -->
+      <div class="alert-error" *ngIf="errorLogin">
+        <span>⚠️ {{ errorLogin }}</span>
+      </div>
+
+      <!-- Formulario login -->
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <div class="input-wrapper">
+          <span class="input-icon">✉️</span>
+          <input
+            type="email"
+            [(ngModel)]="correo"
+            placeholder="tu@correo.com"
+            (keyup.enter)="iniciarSesion()"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Contraseña</label>
+        <div class="input-wrapper">
+          <span class="input-icon">🔒</span>
+          <input
+            [type]="verContrasena ? 'text' : 'password'"
+            [(ngModel)]="contrasena"
+            placeholder="••••••••"
+            (keyup.enter)="iniciarSesion()"
+          />
+          <span class="toggle-pass" (click)="verContrasena = !verContrasena">
+            {{ verContrasena ? '🙈' : '👁️' }}
+          </span>
+        </div>
+      </div>
+
+      <button class="btn-login" (click)="iniciarSesion()" [disabled]="cargandoLogin">
+        <span *ngIf="!cargandoLogin">Iniciar Sesión</span>
+        <span *ngIf="cargandoLogin" class="spinner">⏳ Iniciando...</span>
+      </button>
+
+      <div class="divider"><span>o</span></div>
+
+      <a href="https://wa.me/51999999999" target="_blank" class="btn-whatsapp">
+        💬 Contactar por WhatsApp
+      </a>
+
+      <p class="register-link">
+        ¿No tienes cuenta?
+        <a (click)="abrirModal()">Crear cuenta gratis</a>
+      </p>
     </div>
+  </main>
 
-    <div class="error-msg" *ngIf="error">{{ error }}</div>
-
-    <div class="form-group">
-      <label>Correo electrónico</label>
-      <input type="email" [(ngModel)]="correo" placeholder="tu@correo.com" />
-    </div>
-
-    <div class="form-group">
-      <label>Contraseña</label>
-      <input type="password" [(ngModel)]="contrasena" placeholder="••••••••" />
-    </div>
-
-    <button (click)="iniciarSesion()" [disabled]="cargando" class="btn-login">
-      {{ cargando ? 'Iniciando...' : 'Iniciar Sesión' }}
-    </button>
-
-    <p class="login-footer">
-      ¿No tienes cuenta? 
-      <a routerLink="/registro">Crear cuenta</a>
+  <footer>
+    <p>© 2025 Entre Páginas |
+      <a href="mailto:info@entrepaginas.org">info&#64;entrepaginas.org</a>
     </p>
+  </footer>
+</div>
 
-    <p class="login-footer">
-      <a routerLink="/">← Volver al inicio</a>
-    </p>
+<!-- ════════════════════════════════
+     MODAL REGISTRO
+════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="modalAbierto" (click)="cerrarModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+
+    <!-- ÉXITO -->
+    <div class="registro-exitoso" *ngIf="registroExitoso">
+      <div class="success-icon"></div>
+      <h3>¡Cuenta creada con éxito!</h3>
+      <p>Tu cuenta ha sido registrada correctamente.</p>
+      <p class="exito-sub">Por favor inicia sesión con tus credenciales.</p>
+      <button class="btn-ir-login" (click)="irAlLogin()">
+        Iniciar sesión ahora →
+      </button>
+    </div>
+
+    <ng-container *ngIf="!registroExitoso">
+      <div class="modal-header">
+        <h2> Crear cuenta</h2>
+        <button class="btn-cerrar" (click)="cerrarModal()">✕</button>
+      </div>
+
+      <div class="alert-error" *ngIf="errorRegistro">
+        <span> {{ errorRegistro }}</span>
+      </div>
+
+      <div class="modal-body">
+        <!-- Nombre -->
+        <div class="form-group" [class.has-error]="errores.nombre">
+          <label>Nombre completo <span class="req">*</span></label>
+          <input type="text" [(ngModel)]="regNombre" placeholder="Tu nombre completo"
+            (blur)="validarCampo('nombre')" (input)="validarCampo('nombre')" />
+          <span class="error-msg" *ngIf="errores.nombre">{{ errores.nombre }}</span>
+        </div>
+
+        <!-- Correo -->
+        <div class="form-group" [class.has-error]="errores.correo">
+          <label>Correo electrónico <span class="req">*</span></label>
+          <input type="email" [(ngModel)]="regCorreo" placeholder="tu@correo.com"
+            (blur)="validarCampo('correo')" (input)="validarCampo('correo')" />
+          <span class="error-msg" *ngIf="errores.correo">{{ errores.correo }}</span>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group" [class.has-error]="errores.password">
+          <label>Contraseña <span class="req">*</span></label>
+          <div class="input-wrapper">
+            <input [type]="verPasswordReg ? 'text' : 'password'"
+              [(ngModel)]="regPassword" placeholder="Mínimo 6 caracteres"
+              (blur)="validarCampo('password')" (input)="validarCampo('password')" />
+            <span class="toggle-pass" (click)="verPasswordReg = !verPasswordReg">
+              {{ verPasswordReg ? '🙈' : '👁️' }}
+            </span>
+          </div>
+          <span class="error-msg" *ngIf="errores.password">{{ errores.password }}</span>
+        </div>
+
+        <!-- Confirmar password -->
+        <div class="form-group" [class.has-error]="errores.confirmPassword">
+          <label>Confirmar contraseña <span class="req">*</span></label>
+          <input type="password" [(ngModel)]="regConfirmPassword"
+            placeholder="Repite tu contraseña"
+            (blur)="validarCampo('confirmPassword')"
+            (input)="validarCampo('confirmPassword')" />
+          <span class="error-msg" *ngIf="errores.confirmPassword">{{ errores.confirmPassword }}</span>
+        </div>
+
+        <!-- DNI -->
+        <div class="form-group" [class.has-error]="errores.dni">
+          <label>DNI <span class="req">*</span></label>
+          <input type="text" [(ngModel)]="regDni" placeholder="12345678"
+            maxlength="8" (blur)="validarCampo('dni')" (input)="validarCampo('dni')" />
+          <span class="error-msg" *ngIf="errores.dni">{{ errores.dni }}</span>
+        </div>
+
+        <!-- Teléfono -->
+        <div class="form-group" [class.has-error]="errores.telefono">
+          <label>Teléfono <span class="req">*</span></label>
+          <input type="text" [(ngModel)]="regTelefono" placeholder="999999999"
+            maxlength="9" (blur)="validarCampo('telefono')"
+            (input)="validarCampo('telefono')" />
+          <span class="error-msg" *ngIf="errores.telefono">{{ errores.telefono }}</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn-registrar" (click)="registrar()" [disabled]="cargandoRegistro">
+          {{ cargandoRegistro ? '⏳ Registrando...' : '✅ Crear cuenta' }}
+        </button>
+      </div>
+    </ng-container>
   </div>
 </div>
