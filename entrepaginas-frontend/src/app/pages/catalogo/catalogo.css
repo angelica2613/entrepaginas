@@ -22,6 +22,7 @@
   z-index: 100;
   box-shadow: 0 2px 12px rgba(3,4,94,0.3);
 }
+.nav-spacer { flex: 1; }
 
 .nav-brand { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
 .brand-icon { font-size: 1.5rem; }
@@ -42,7 +43,13 @@
   cursor: pointer; font-size: 1rem;
 }
 
-.nav-links { display: flex; align-items: center; gap: 1rem; flex-shrink: 0; }
+.nav-links { 
+  display: flex; 
+  align-items: center; 
+  gap: 1rem; 
+  flex-shrink: 0;
+  margin-left: auto;
+}
 .nav-user { color: #ADE8F4; font-size: 0.8rem; }
 .nav-link { color: #90E0EF; text-decoration: none; font-size: 0.85rem; }
 .nav-link:hover { color: white; }

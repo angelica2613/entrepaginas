@@ -30,6 +30,8 @@ export class Catalogo implements OnInit {
   exitoPrestamo = false;
   cargandoPrestamo = false;
   fechaMinima = '';
+  direccionEntrega= '';
+  errorDireccion = '';
 
   usuario: any = null;
 
@@ -99,6 +101,7 @@ export class Catalogo implements OnInit {
     this.modalLibroAbierto = false;
     this.modalPrestamoAbierto = true;
     this.fechaDevolucion = '';
+    this.direccionEntrega = '';
     this.errorPrestamo = '';
     this.exitoPrestamo = false;
   }
@@ -110,34 +113,39 @@ export class Catalogo implements OnInit {
   }
 
   solicitarPrestamo() {
-    if (!this.fechaDevolucion) {
-      this.errorPrestamo = 'Selecciona una fecha de devolución';
-      return;
-    }
-
-    this.cargandoPrestamo = true;
-    this.errorPrestamo = '';
-
-    const datos = {
-      libroId: this.libroSeleccionado.id,
-      correo: this.usuario.correo,
-      fechaDevolucion: this.fechaDevolucion
-    };
-
-    this.libroService.solicitarPrestamo(datos).subscribe({
-      next: (res: any) => {
-        if (res.success) {
-          this.exitoPrestamo = true;
-        } else {
-          this.errorPrestamo = res.message;
-        }
-        this.cargandoPrestamo = false;
-      },
-      error: () => {
-        this.errorPrestamo = 'Error de conexión';
-        this.cargandoPrestamo = false;
+      if (!this.fechaDevolucion) {
+          this.errorPrestamo = 'Selecciona una fecha de devolución';
+          return;
       }
-    });
+      if (!this.direccionEntrega.trim()) {
+          this.errorPrestamo = 'Ingresa una dirección de entrega';
+          return;
+      }
+
+      this.cargandoPrestamo = true;
+      this.errorPrestamo = '';
+
+      const datos = {
+          libroId: this.libroSeleccionado.id,
+          correo: this.usuario.correo,
+          fechaDevolucion: this.fechaDevolucion,
+          direccion: this.direccionEntrega
+      };
+
+      this.libroService.solicitarPrestamo(datos).subscribe({
+          next: (res: any) => {
+              if (res.success) {
+                  this.exitoPrestamo = true;
+              } else {
+                  this.errorPrestamo = res.message;
+              }
+              this.cargandoPrestamo = false;
+          },
+          error: () => {
+              this.errorPrestamo = 'Error de conexión';
+              this.cargandoPrestamo = false;
+          }
+      });
   }
 
   getImagen(libro: any): string {

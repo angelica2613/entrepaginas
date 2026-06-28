@@ -1,1 +1,202 @@
-<p>mi-cuenta works!</p>
+<div class="mc-page" *ngIf="!cargando">
+
+  <!-- NAVBAR -->
+  <nav class="mc-navbar">
+    <div class="mc-brand">
+      <span class="brand-icon">📚</span>
+      <span class="brand-name">Entre Páginas</span>
+    </div>
+    <div class="mc-nav-links">
+      <a routerLink="/catalogo" class="mc-nav-link">🔍 Catálogo</a>
+      <button (click)="cerrarSesion()" class="mc-btn-logout">Salir</button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="mc-hero">
+    <p class="mc-hero-sub">Bienvenido/a de vuelta</p>
+    <h1 class="mc-hero-nombre">{{ nombre || usuario?.correo }}</h1>
+    <p class="mc-hero-correo">{{ usuario?.correo }}</p>
+    <div class="mc-divisor">✦ ✦ ✦</div>
+  </div>
+
+  <main class="mc-main">
+
+    <!-- ALERTAS VENCIMIENTO -->
+    <div *ngFor="let p of prestamosActivos()">
+      <div class="mc-alerta" *ngIf="estaVencido(p) || vencePronto(p)">
+        <span>⚠️</span>
+        <div>
+          <p class="mc-alerta-titulo">{{ estaVencido(p) ? 'Préstamo vencido' : 'Vence en menos de 3 días' }}</p>
+          <p class="mc-alerta-sub">«{{ p.libro?.titulo }}» — fecha límite: {{ p.fechaDevolucion | date:'dd/MM/yyyy' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="mc-stats">
+      <div class="mc-stat-card">
+        <div class="mc-stat-num dorado">{{ prestamos.length }}</div>
+        <div class="mc-stat-label">Préstamos totales</div>
+      </div>
+      <div class="mc-stat-card">
+        <div class="mc-stat-num verde">{{ prestamosActivos().length }}</div>
+        <div class="mc-stat-label">Activos ahora</div>
+      </div>
+      <div class="mc-stat-card">
+        <div class="mc-stat-num azul">{{ ventas.length }}</div>
+        <div class="mc-stat-label">Compras realizadas</div>
+      </div>
+    </div>
+
+    <div class="mc-grid">
+
+      <!-- PERFIL -->
+      <div class="mc-perfil">
+        <div class="mc-card">
+          <div class="mc-card-header">
+            <span>👤</span>
+            <h2>Mi Perfil</h2>
+          </div>
+          <div class="mc-card-body">
+
+            <div class="mc-alert-success" *ngIf="mensajeExito">✅ {{ mensajeExito }}</div>
+            <div class="mc-alert-error" *ngIf="mensajeError">⚠️ {{ mensajeError }}</div>
+
+            <div class="mc-form-group" [class.has-error]="errores.nombre">
+              <label>Nombre completo</label>
+              <input type="text" [(ngModel)]="nombre" placeholder="Tu nombre"
+                (blur)="validarCampo('nombre')" (input)="validarCampo('nombre')" />
+              <span class="mc-error" *ngIf="errores.nombre">{{ errores.nombre }}</span>
+            </div>
+
+            <div class="mc-form-group" [class.has-error]="errores.dni">
+              <label>DNI</label>
+              <input type="text" [(ngModel)]="dni" placeholder="00000000" maxlength="8"
+                (blur)="validarCampo('dni')" (input)="validarCampo('dni')" />
+              <span class="mc-error" *ngIf="errores.dni">{{ errores.dni }}</span>
+            </div>
+
+            <div class="mc-form-group" [class.has-error]="errores.telefono">
+              <label>Teléfono</label>
+              <input type="text" [(ngModel)]="telefono" placeholder="999 000 000" maxlength="9"
+                (blur)="validarCampo('telefono')" (input)="validarCampo('telefono')" />
+              <span class="mc-error" *ngIf="errores.telefono">{{ errores.telefono }}</span>
+            </div>
+
+            <div class="mc-form-group">
+              <label>Dirección</label>
+              <input type="text" [(ngModel)]="direccion" placeholder="Av. Los Libros 123" />
+            </div>
+
+            <div class="mc-correo-box">
+              <span class="mc-correo-label">Correo (no editable)</span>
+              <p>{{ usuario?.correo }}</p>
+            </div>
+
+            <button class="mc-btn-guardar" (click)="guardar()" [disabled]="guardando">
+              {{ guardando ? '⏳ Guardando...' : '💾 Guardar cambios' }}
+            </button>
+
+            <a routerLink="/catalogo" class="mc-btn-catalogo">📖 Explorar catálogo</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTORIAL -->
+      <div class="mc-historial">
+
+        <!-- Préstamos activos -->
+        <div class="mc-card">
+          <div class="mc-card-header">
+            <span>📖</span>
+            <h2>Préstamos activos</h2>
+          </div>
+          <div class="mc-card-body">
+            <div class="mc-empty" *ngIf="prestamosActivos().length === 0">
+              <p>No tienes préstamos activos.</p>
+            </div>
+            <table class="mc-tabla" *ngIf="prestamosActivos().length > 0">
+              <thead><tr><th>Libro</th><th>Desde</th><th>Devolución</th><th>Estado</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let p of prestamosActivos()">
+                  <td>
+                    <strong>{{ p.libro?.titulo }}</strong><br/>
+                    <small>{{ p.libro?.autor }}</small>
+                  </td>
+                  <td>{{ p.fechaPrestamo | date:'dd/MM/yyyy' }}</td>
+                  <td>{{ p.fechaDevolucion ? (p.fechaDevolucion | date:'dd/MM/yyyy') : 'Sin fecha' }}</td>
+                  <td>
+                    <span class="badge-vencido" *ngIf="estaVencido(p)">⚠️ Vencido</span>
+                    <span class="badge-pronto" *ngIf="!estaVencido(p) && vencePronto(p)">🕐 Vence pronto</span>
+                    <span class="badge-activo" *ngIf="!estaVencido(p) && !vencePronto(p)">✅ Activo</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Historial -->
+        <div class="mc-card">
+          <div class="mc-card-header">
+            <span>📜</span>
+            <h2>Historial de préstamos</h2>
+          </div>
+          <div class="mc-card-body">
+            <div class="mc-empty" *ngIf="prestamosDevueltos().length === 0">
+              <p>Aún no has devuelto ningún libro.</p>
+            </div>
+            <table class="mc-tabla" *ngIf="prestamosDevueltos().length > 0">
+              <thead><tr><th>Libro</th><th>Préstamo</th><th>Devolución</th><th>Estado</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let p of prestamosDevueltos()">
+                  <td>{{ p.libro?.titulo }}</td>
+                  <td>{{ p.fechaPrestamo | date:'dd/MM/yyyy' }}</td>
+                  <td>{{ p.fechaDevolucion | date:'dd/MM/yyyy' }}</td>
+                  <td><span class="badge-devuelto">✓ Devuelto</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Compras -->
+        <div class="mc-card">
+          <div class="mc-card-header">
+            <span>🛍️</span>
+            <h2>Mis compras</h2>
+          </div>
+          <div class="mc-card-body">
+            <div class="mc-empty" *ngIf="ventas.length === 0">
+              <p>Todavía no has realizado ninguna compra.</p>
+            </div>
+            <table class="mc-tabla" *ngIf="ventas.length > 0">
+              <thead><tr><th>#</th><th>Fecha</th><th>Total</th><th>Estado</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let v of ventas">
+                  <td><strong>#{{ v.id }}</strong></td>
+                  <td>{{ v.fechaVenta | date:'dd/MM/yyyy' }}</td>
+                  <td><strong>S/ {{ v.total | number:'1.2-2' }}</strong></td>
+                  <td>
+                    <span class="badge-vencido" *ngIf="v.anulada">Anulada</span>
+                    <span class="badge-activo" *ngIf="!v.anulada">✅ Completada</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="mc-footer">
+    <p>© 2025 Entre Páginas | <a href="mailto:info@entrepaginas.org">info&#64;entrepaginas.org</a></p>
+  </footer>
+</div>
+
+<div class="mc-loading" *ngIf="cargando">
+  <p>⏳ Cargando tu perfil...</p>
+</div>

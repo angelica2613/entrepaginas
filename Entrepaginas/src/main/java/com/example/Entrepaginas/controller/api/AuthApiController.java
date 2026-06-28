@@ -46,11 +46,13 @@ public class AuthApiController {
         Usuario usuario = usuarioRepository.findByCorreo(correo);
 
         if (usuario != null && passwordEncoder.matches(contrasena, usuario.getContrasena())) {
+            String nombre = usuario.getCliente() != null ? usuario.getCliente().getNombre() : usuario.getCorreo();
             return ResponseEntity.ok(Map.of(
                 "success", true,
                 "id", usuario.getId(),
                 "correo", usuario.getCorreo(),
-                "rol", usuario.getRol()
+                "rol", usuario.getRol(),
+                "nombre", nombre  // ← agregar esto
             ));
         }
 
@@ -86,25 +88,30 @@ public class AuthApiController {
             ));
         }
     }
-    @PostMapping("/prestamo/solicitar")
+@PostMapping("/prestamo/solicitar")
 public ResponseEntity<Map<String, Object>> solicitarPrestamo(
-        @RequestBody Map<String, Object> datos,
-        HttpSession session) {
+        @RequestBody Map<String, Object> datos) {
     try {
-        // Obtener usuario de sesión (Thymeleaf) 
-        // o del localStorage (Angular lo manda en el body)
         Long libroId = Long.valueOf(datos.get("libroId").toString());
         String correoCliente = datos.get("correo").toString();
         String fechaStr = datos.get("fechaDevolucion").toString();
+        String direccion = datos.getOrDefault("direccion", "").toString();
         LocalDate fechaDevolucion = LocalDate.parse(fechaStr);
 
-        // Buscar cliente por correo
+        // Buscar o crear cliente
         Cliente cliente = clienteRepository.findByCorreo(correoCliente);
         if (cliente == null) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "message", "Cliente no encontrado"
-            ));
+            // Buscar usuario para obtener datos
+            Usuario usuario = usuarioRepository.findByCorreo(correoCliente);
+            cliente = new Cliente();
+            cliente.setCorreo(correoCliente);
+            cliente.setNombre(usuario != null && usuario.getCliente() != null 
+                ? usuario.getCliente().getNombre() : correoCliente);
+            cliente.setDireccion(direccion);
+            cliente = clienteRepository.save(cliente);
+        } else if (direccion != null && !direccion.isEmpty()) {
+            cliente.setDireccion(direccion);
+            clienteRepository.save(cliente);
         }
 
         // Buscar libro
