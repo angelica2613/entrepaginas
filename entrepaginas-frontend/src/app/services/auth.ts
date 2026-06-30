@@ -15,8 +15,8 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/login`, { correo, contrasena });
   }
 
-  registro(correo: string, contrasena: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/registro`, { correo, contrasena });
+  registro(correo: string, contrasena: string, nombre: string, dni: string, telefono: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/registro`, { correo, contrasena, nombre, dni, telefono });
   }
 
   guardarSesion(usuario: any) {

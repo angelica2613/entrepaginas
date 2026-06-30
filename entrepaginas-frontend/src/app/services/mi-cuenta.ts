@@ -8,9 +8,9 @@ export class MiCuentaService {
 
   constructor(private http: HttpClient) {}
 
-  obtenerPerfil(correo: string): Observable<any> {
-    return this.http.get(`${this.api}/${correo}`);
-  }
+obtenerPerfil(id: number): Observable<any> {
+  return this.http.get(`${this.api}/${id}`);
+}
 
   actualizar(datos: any): Observable<any> {
     return this.http.put(`${this.api}/actualizar`, datos);

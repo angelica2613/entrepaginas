@@ -62,32 +62,41 @@ public class AuthApiController {
         ));
     }
 
-    @PostMapping("/registro")
-    public ResponseEntity<Map<String, Object>> registro(@RequestBody Map<String, String> datos) {
-        try {
-            String correo = datos.get("correo");
-            
-            if (usuarioRepository.findByCorreo(correo) != null) {
-                return ResponseEntity.status(409).body(Map.of(
-                    "success", false,
-                    "message", "Ese correo ya está registrado"
-                ));
-            }
 
-            Usuario usuario = new Usuario();
-            usuario.setCorreo(correo);
-            usuario.setContrasena(passwordEncoder.encode(datos.get("contrasena")));
-            usuario.setRol("CLIENTE");
-            usuarioRepository.save(usuario);
-
-            return ResponseEntity.ok(Map.of("success", true));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
+@PostMapping("/registro")
+public ResponseEntity<Map<String, Object>> registro(@RequestBody Map<String, String> datos) {
+    try {
+        String correo = datos.get("correo");
+        
+        if (usuarioRepository.findByCorreo(correo) != null) {
+            return ResponseEntity.status(409).body(Map.of(
                 "success", false,
-                "message", "Error al registrar"
+                "message", "Ese correo ya está registrado"
             ));
         }
+
+        Cliente cliente = new Cliente();
+        cliente.setCorreo(correo);
+        cliente.setNombre(datos.getOrDefault("nombre", ""));
+        cliente.setDni(datos.getOrDefault("dni", ""));
+        cliente.setTelefono(datos.getOrDefault("telefono", ""));
+
+        Usuario usuario = new Usuario();
+        usuario.setCorreo(correo);
+        usuario.setContrasena(passwordEncoder.encode(datos.get("contrasena")));
+        usuario.setRol("CLIENTE");
+        usuario.setCliente(cliente);
+
+        usuarioRepository.save(usuario);
+
+        return ResponseEntity.ok(Map.of("success", true));
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "success", false,
+            "message", "Error al registrar: " + e.getMessage()
+        ));
     }
+}
 @PostMapping("/prestamo/solicitar")
 public ResponseEntity<Map<String, Object>> solicitarPrestamo(
         @RequestBody Map<String, Object> datos) {

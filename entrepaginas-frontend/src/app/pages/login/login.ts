@@ -35,7 +35,7 @@ export class Login {
   constructor(private auth: AuthService, private router: Router) {}
 
   // ── LOGIN ──
-  iniciarSesion() {
+iniciarSesion() {
     this.errorLogin = '';
     if (!this.correo) { this.errorLogin = 'El correo es obligatorio'; return; }
     if (!this.contrasena) { this.errorLogin = 'La contraseña es obligatoria'; return; }
@@ -45,8 +45,12 @@ export class Login {
     this.auth.login(this.correo, this.contrasena).subscribe({
       next: (res: any) => {
         if (res.success) {
-          this.auth.guardarSesion(res);
-          this.router.navigate([res.rol === 'ADMIN' ? '/dashboard' : '/catalogo']);
+          if (res.rol === 'ADMIN') {
+            this.autoLoginAdmin();
+          } else {
+            this.auth.guardarSesion(res);
+            this.router.navigate(['/catalogo']);
+          }
         } else {
           this.errorLogin = res.message || 'Credenciales incorrectas';
         }
@@ -57,6 +61,28 @@ export class Login {
         this.cargandoLogin = false;
       }
     });
+  }
+
+  autoLoginAdmin() {
+    // Crea un formulario invisible y lo envía por POST a Spring Boot
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'http://localhost:8080/entrepaginas/acceder';
+
+    const inputCorreo = document.createElement('input');
+    inputCorreo.type = 'hidden';
+    inputCorreo.name = 'correo';
+    inputCorreo.value = this.correo;
+
+    const inputPass = document.createElement('input');
+    inputPass.type = 'hidden';
+    inputPass.name = 'contrasena';
+    inputPass.value = this.contrasena;
+
+    form.appendChild(inputCorreo);
+    form.appendChild(inputPass);
+    document.body.appendChild(form);
+    form.submit();
   }
 
   // ── MODAL ──
@@ -142,7 +168,7 @@ export class Login {
     this.cargandoRegistro = true;
     this.errorRegistro = '';
 
-    this.auth.registro(this.regCorreo, this.regPassword).subscribe({
+    this.auth.registro(this.regCorreo, this.regPassword, this.regNombre, this.regDni, this.regTelefono).subscribe({
       next: (res: any) => {
         if (res.success) {
           this.registroExitoso = true;

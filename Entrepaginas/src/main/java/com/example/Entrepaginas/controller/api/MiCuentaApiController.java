@@ -22,10 +22,10 @@ public class MiCuentaApiController {
     @Autowired private PrestamoRepository prestamoRepository;
     @Autowired private VentaRepository ventaRepository;
 
-    @GetMapping("/{correo}")
-    public ResponseEntity<Map<String, Object>> obtenerPerfil(@PathVariable String correo) {
-        Usuario usuario = usuarioRepository.findByCorreo(correo);
-        if (usuario == null) return ResponseEntity.notFound().build();
+@GetMapping("/{id}")
+public ResponseEntity<Map<String, Object>> obtenerPerfil(@PathVariable Long id) {
+    Usuario usuario = usuarioRepository.findById(id).orElse(null);
+    if (usuario == null) return ResponseEntity.notFound().build();
 
         Map<String, Object> resp = new HashMap<>();
         resp.put("correo", usuario.getCorreo());
